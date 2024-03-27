@@ -1,12 +1,12 @@
 <script setup>
 import Connect from './components/Connect.vue'
-import Contents from './components/Contents.vue'
+import Account from './components/Account.vue'
 </script>
 
 <template>
   <div v-if="!isWorking">
     <Connect v-if="wallet.address.length === 0" />
-    <Contents v-if="wallet.address.length > 0" />
+    <Account v-if="wallet.address.length > 0" />
   </div>
   <div v-if="isWorking">{{ workingMessage }}</div>
 </template>

@@ -7,7 +7,7 @@ This template should help get you started developing with Vue 3 in Vite using th
 bun install
 ```
 
-Go to Wallet Connect dashboard and create a new `PROJECT_ID` then replace it in `stores/wallet.js`, search for: `<YOUR_PROJECT_ID_FROM_WALLETCONNECT>`.
+Go to Wallet Connect dashboard and create a new `PROJECT_ID` then use `stores/config.example.ts` to create `stores/config/ts`, search for: `<YOUR_PROJECT_ID_FROM_WALLETCONNECT>`.
 
 ### Compiles and hot-reloads for development
 ```

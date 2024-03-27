@@ -1,5 +1,6 @@
 <template>
-  <p>Welcome back {{ wallet.address }}</p>
+  <p>Welcome back<br>{{ wallet.address }}</p>
+  <button type="button" @click="wallet.createAbstractedAccount()">CREATE AA</button><br>
   <button v-if="wallet.type === 'mego'" type="button" @click="wallet.logout()">LOGOUT</button>
 </template>
 
@@ -10,7 +11,9 @@ export default {
   data() {
     return {
       megoWalletApi: 'https://wallet.mego.tools',
-      wallet: useWalletStore()
+      wallet: useWalletStore(),
+      isWorking: false,
+      workingMessage: ""
     }
   },
   async mounted() {

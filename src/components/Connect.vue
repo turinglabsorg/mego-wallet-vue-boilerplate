@@ -1,5 +1,5 @@
 <template>
-  <h1>MEGO + WalletConnect</h1>
+  <h2>MEGO WALLET EXAMPLES<br>WalletConnect + Alchemy Account Kit</h2>
   <p>Please connect wallet first to enter.</p>
   <div class="card">
     <w3m-connect-button id="w3modal-button" v-show="false" />
