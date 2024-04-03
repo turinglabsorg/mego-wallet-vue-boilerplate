@@ -4,7 +4,7 @@ import { mainnet } from 'viem/chains'
 import { reconnect, watchAccount, signMessage } from '@wagmi/core'
 import { configs } from './config'
 import { createModularAccountAlchemyClient } from "@alchemy/aa-alchemy";
-import { optimismSepolia, type Hex } from "@alchemy/aa-core";
+import { optimismSepolia, type Hex, Address } from "@alchemy/aa-core";
 import { MegoSigner } from "../signer/mego";
 
 export const useWalletStore = defineStore('wallet', {
@@ -172,7 +172,7 @@ export const useWalletStore = defineStore('wallet', {
                 window.location.href = "https://wallet.mego.tools/auth/" + store.provider + "?origin=" + window.location.host + "&message=CREATE_SESSION&permissions=sign"
             }, 50)
         },
-        async createAbstractedAccount() {
+        async getAbstractedAccountAddress() {
             const store = this
             try {
                 if (store.type === "mego") {
@@ -206,6 +206,68 @@ export const useWalletStore = defineStore('wallet', {
                         }))
                         console.log("Abstracted address:", store.abstracted_address)
                         store.working = false
+                    } else {
+                        console.log("Redirecting to create session with MEGO wallet")
+                        store.createSessionWithMegoWallet()
+                    }
+                } else {
+                    // TODO: Add Alchemy stuff here
+                    console.log("Creating AA with web3 wallet")
+                }
+            } catch (e) {
+                console.error(e)
+                store.working = false
+            }
+        },
+        async sendTxWithAbstractedAccount() {
+            const store = this
+            try {
+                if (store.type === "mego") {
+                    console.log("Creating abstracted account with MEGO wallet")
+                    if (store.session !== "") {
+                        store.working = 'Validating session...'
+                        // console.log("Creating abstracted account with session:", store.session)
+                        const chain = optimismSepolia;
+                        // Authenticate with your smart account
+                        const signer = new MegoSigner("mego");
+                        const authenticated = await signer.authenticate({
+                            session: store.session
+                        })
+                        store.working = 'Creating client...'
+                        console.log("Authenticated with:", authenticated.address);
+
+                        // Create a smart account client to send user operations from your smart account
+                        const client = await createModularAccountAlchemyClient({
+                            apiKey: configs.alchemyKey as string,
+                            chain,
+                            signer,
+                            gasManagerConfig: {
+                                policyId: configs.accountKitPolicyId as string,
+                            },
+                        });
+                        console.log("Abstracted address:", store.abstracted_address)
+                        store.working = 'Sending an empty transaction to your main address...'
+                        const receiver = store.address as Address;
+                        // Send a user operation from your smart account to Vitalik that does nothing
+                        const { hash: uoHash } = await client.sendUserOperation({
+                            uo: {
+                                target: receiver, // The desired target contract address
+                                data: `0x`, // The desired call data
+                                value: 0n, // (Optional) value to send the target contract address, but smart contract needs to be filled with eth
+                            },
+                        });
+                        store.working = 'UserOperation Hash is: ' + uoHash + ', waiting for transaction...'
+                        console.log("UserOperation Hash: ", uoHash); // Log the user operation hash
+
+                        // Wait for the user operation to be mined
+                        const txHash = await client.waitForUserOperationTransaction({
+                            hash: uoHash,
+                        });
+                        store.working = 'Transaction Hash is: ' + txHash + ', use it to check tx with block explorer.'
+                        console.log("Transaction Hash: ", txHash);
+                        setTimeout(function () {
+                            store.working = false
+                        }, 5000)
                     } else {
                         console.log("Redirecting to create session with MEGO wallet")
                         store.createSessionWithMegoWallet()
