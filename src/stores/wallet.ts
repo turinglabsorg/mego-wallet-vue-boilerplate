@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi'
-import { mainnet } from 'viem/chains'
 import { reconnect, watchAccount, signMessage } from '@wagmi/core'
 import { configs } from './config'
 import { createModularAccountAlchemyClient } from "@alchemy/aa-alchemy";
@@ -31,7 +30,7 @@ export const useWalletStore = defineStore('wallet', {
                     url: window.location.href,
                     icons: ['https://mego.tickets/favicon.ico']
                 },
-                chains: [mainnet, optimismSepolia]
+                chains: [optimismSepolia]
             }
         }
     },
@@ -221,7 +220,7 @@ export const useWalletStore = defineStore('wallet', {
                     store.working = 'Creating abstracted account...'
                     console.log("Creating AA with web3 wallet")
                     const walletClient = createWalletClient({
-                        chain: mainnet,
+                        chain: optimismSepolia,
                         transport: custom(window.ethereum),
                     });
                     // this can now be used as an signer for a Smart Contract Account
@@ -285,7 +284,7 @@ export const useWalletStore = defineStore('wallet', {
                     store.working = 'Creating abstracted account...'
                     console.log("Creating AA with web3 wallet")
                     const walletClient = createWalletClient({
-                        chain: mainnet,
+                        chain: optimismSepolia,
                         transport: custom(window.ethereum),
                     });
                     // this can now be used as an signer for a Smart Contract Account
