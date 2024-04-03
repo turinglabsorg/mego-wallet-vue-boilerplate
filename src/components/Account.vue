@@ -1,9 +1,9 @@
 <template>
   <p>Welcome back:<br>{{ wallet.address }}</p>
-  <button v-if="wallet.abstracted_address?.length === 0" type="button"
+  <button v-if="!wallet.abstracted_address" type="button"
     @click="wallet.getAbstractedAccountAddress()">CREATE
     AA</button><br>
-  <div v-if="wallet.abstracted_address?.length > 0">
+  <div v-if="wallet.abstracted_address">
     Your abstracted address is:<br>{{ wallet.abstracted_address }}<br><br>
     <button type="button" @click="prepareTxAndSend">MINT TOKENS WITH AA</button><br>
   </div>
