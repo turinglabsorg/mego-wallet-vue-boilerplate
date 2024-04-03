@@ -6,6 +6,7 @@ import { configs } from './config'
 import { createModularAccountAlchemyClient } from "@alchemy/aa-alchemy";
 import { optimismSepolia, type Hex, Address } from "@alchemy/aa-core";
 import { MegoSigner } from "../signer/mego";
+import { encodeFunctionData } from "viem";
 
 export const useWalletStore = defineStore('wallet', {
     state: () => {
@@ -44,7 +45,7 @@ export const useWalletStore = defineStore('wallet', {
                 let feedback = setInterval(() => {
                     if (store.session !== "" && store.abstracted_address === "" && store.type === "mego" && store.working === false) {
                         store.working = 'Creating abstracted account...'
-                        store.createAbstractedAccount()
+                        store.getAbstractedAccountAddress()
                     } else {
                         clearInterval(feedback)
                     }
@@ -219,7 +220,7 @@ export const useWalletStore = defineStore('wallet', {
                 store.working = false
             }
         },
-        async sendTxWithAbstractedAccount() {
+        async sendTxWithAbstractedAccount(abi, contract, fn, args) {
             const store = this
             try {
                 if (store.type === "mego") {
@@ -246,13 +247,18 @@ export const useWalletStore = defineStore('wallet', {
                             },
                         });
                         console.log("Abstracted address:", store.abstracted_address)
-                        store.working = 'Sending an empty transaction to your main address...'
-                        const receiver = store.address as Address;
-                        // Send a user operation from your smart account to Vitalik that does nothing
+                        store.working = 'Sending transaction to contract...'
+                        // Calculating the call data
+                        const uoCallData = encodeFunctionData({
+                            abi: abi,
+                            functionName: fn,
+                            args: args,
+                        });
+                        // Send a user operation to the target contract
                         const { hash: uoHash } = await client.sendUserOperation({
                             uo: {
-                                target: receiver, // The desired target contract address
-                                data: `0x`, // The desired call data
+                                target: contract as Address,
+                                data: uoCallData,
                                 value: 0n, // (Optional) value to send the target contract address, but smart contract needs to be filled with eth
                             },
                         });
