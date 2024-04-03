@@ -3,6 +3,9 @@ import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi'
 import { mainnet } from 'viem/chains'
 import { reconnect, watchAccount, signMessage } from '@wagmi/core'
 import { configs } from './config'
+import { createModularAccountAlchemyClient } from "@alchemy/aa-alchemy";
+import { optimismSepolia, type Hex } from "@alchemy/aa-core";
+import { MegoSigner } from "../signer/mego";
 
 export const useWalletStore = defineStore('wallet', {
     state: () => {
@@ -171,17 +174,49 @@ export const useWalletStore = defineStore('wallet', {
         },
         async createAbstractedAccount() {
             const store = this
-            if (store.type === "mego") {
-                console.log("Creating abstracted account with MEGO wallet")
-                if (store.session !== "") {
-                    console.log("Creating abstracted account with session:", store.session)
-                    store.working = 'Creating abstracted account...'
+            try {
+                if (store.type === "mego") {
+                    console.log("Creating abstracted account with MEGO wallet")
+                    if (store.session !== "") {
+                        store.working = 'Validating session...'
+                        // console.log("Creating abstracted account with session:", store.session)
+                        const chain = optimismSepolia;
+                        // Authenticate with your smart account
+                        const signer = new MegoSigner("mego");
+                        const authenticated = await signer.authenticate({
+                            session: store.session
+                        })
+                        store.working = 'Calculating address...'
+                        console.log("Authenticated with:", authenticated.address);
+
+                        // Create a smart account client to send user operations from your smart account
+                        const client = await createModularAccountAlchemyClient({
+                            // get your Alchemy API key at https://dashboard.alchemy.com
+                            apiKey: configs.alchemyKey as string,
+                            chain,
+                            signer,
+                        });
+                        store.abstracted_address = await client.getAddress();
+                        localStorage.setItem('wallet', JSON.stringify({
+                            address: store.address,
+                            type: store.type,
+                            provider: store.provider,
+                            session: store.session,
+                            abstracted_address: store.abstracted_address
+                        }))
+                        console.log("Abstracted address:", store.abstracted_address)
+                        store.working = false
+                    } else {
+                        console.log("Redirecting to create session with MEGO wallet")
+                        store.createSessionWithMegoWallet()
+                    }
                 } else {
-                    store.createSessionWithMegoWallet()
+                    // TODO: Add Alchemy stuff here
+                    console.log("Creating AA with web3 wallet")
                 }
-            } else {
-                // TODO: Add Alchemy stuff here
-                console.log("Creating AA with web3 wallet")
+            } catch (e) {
+                console.error(e)
+                store.working = false
             }
         }
     },

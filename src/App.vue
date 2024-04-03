@@ -26,8 +26,13 @@ export default {
   watch: {
     'wallet.working': function (message) {
       console.log('Wallet is working.')
-      this.isWorking = true
-      this.workingMessage = message
+      if (message !== false) {
+        this.isWorking = true
+        this.workingMessage = message
+      } else {
+        this.isWorking = false
+        this.workingMessage = ""
+      }
     }
   },
   async mounted() {
