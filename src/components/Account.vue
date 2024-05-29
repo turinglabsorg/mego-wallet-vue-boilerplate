@@ -1,12 +1,14 @@
 <template>
   <p>Welcome back:<br>{{ wallet.address }}</p>
-  <button v-if="!wallet.abstracted_address" type="button"
-    @click="wallet.getAbstractedAccountAddress()">CREATE
+  <button v-if="!wallet.abstracted_address" type="button" @click="wallet.getAbstractedAccountAddress()">CREATE
     AA</button><br>
   <div v-if="wallet.abstracted_address">
     Your abstracted address is:<br>{{ wallet.abstracted_address }}<br><br>
     <button type="button" @click="prepareTxAndSend">MINT TOKENS WITH AA</button><br>
   </div>
+  <button v-if="wallet.type === 'mego'" type="button" @click="wallet.signWithMegoWallet('CLAIM')">SIGN
+    MESSAGE</button>
+  <br v-if="wallet.type === 'mego'">
   <button v-if="wallet.type === 'mego'" type="button" @click="wallet.logout()">LOGOUT</button>
 </template>
 
